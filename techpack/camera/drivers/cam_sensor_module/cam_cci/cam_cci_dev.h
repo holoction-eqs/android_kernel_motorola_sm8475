@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef _CAM_CCI_DEV_H_
@@ -307,11 +306,6 @@ struct v4l2_subdev *cam_cci_get_subdev(int cci_dev_index);
 void cam_cci_dump_registers(struct cci_device *cci_dev,
 		enum cci_i2c_master_t master, enum cci_i2c_queue_t queue);
 
-#ifdef CONFIG_CCI_DEBUG_INTF
-int cam_cci_debug_sub_module_init(void);
-void cam_cci_debug_sub_module_exit(void);
-#endif
-
 /**
  * @brief : API to register CCI hw to platform framework.
  * @return struct platform_device pointer on on success, or ERR_PTR() on error.
@@ -322,4 +316,7 @@ int cam_cci_init_module(void);
  * @brief : API to remove CCI Hw from platform framework.
  */
 void cam_cci_exit_module(void);
+#define VIDIOC_MSM_CCI_CFG \
+	_IOWR('V', BASE_VIDIOC_PRIVATE + 23, struct cam_cci_ctrl)
+
 #endif /* _CAM_CCI_DEV_H_ */

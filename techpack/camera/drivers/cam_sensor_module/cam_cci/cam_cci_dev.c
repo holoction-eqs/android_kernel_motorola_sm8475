@@ -27,6 +27,8 @@ struct v4l2_subdev *cam_cci_get_subdev(int cci_dev_index)
 	return sub_device;
 }
 
+EXPORT_SYMBOL(cam_cci_get_subdev);
+
 static long cam_cci_subdev_ioctl(struct v4l2_subdev *sd,
 	unsigned int cmd, void *arg)
 {
@@ -474,10 +476,6 @@ static int cam_cci_component_bind(struct device *dev,
 		goto cci_no_resource;
 	}
 
-#ifdef CONFIG_CCI_DEBUG_INTF
-	/* <cam_cci>: - Enable CCI Dumps for Debugging */
-	new_cci_dev->dump_en = CAM_CCI_NACK_DUMP_EN | CAM_CCI_TIMEOUT_DUMP_EN;
-#endif
 	new_cci_dev->v4l2_dev_str.internal_ops =
 		&cci_subdev_intern_ops;
 	new_cci_dev->v4l2_dev_str.ops =

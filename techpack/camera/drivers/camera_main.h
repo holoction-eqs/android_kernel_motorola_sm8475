@@ -47,8 +47,6 @@ extern struct platform_driver cam_flash_platform_driver;
 #endif
 #ifdef CONFIG_AF_NOISE_ELIMINATION
 extern struct platform_driver mot_actuator_platform_driver;
-extern int mot_actuator_driver_init(void);
-extern void mot_actuator_driver_exit(void);
 #endif
 #endif
 #ifdef CONFIG_SPECTRA_ICP
@@ -113,6 +111,7 @@ static struct platform_driver *const cam_component_platform_drivers[] = {
 	&cci_driver,
 	&csiphy_driver,
 	&cam_actuator_platform_driver,
+
 	&cam_sensor_platform_driver,
 	&cam_eeprom_platform_driver,
 	&cam_ois_platform_driver,

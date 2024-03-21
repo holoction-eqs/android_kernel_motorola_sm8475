@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only WITH Linux-syscall-note */
 /*
  * Copyright (c) 2016-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2021-2022 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef __UAPI_CAM_SENSOR_H__
@@ -19,13 +19,6 @@
 
 #define SKEW_CAL_MASK             BIT(1)
 #define PREAMBLE_PATTEN_CAL_MASK  BIT(2)
-
-#define CAM_SENSOR_GET_QUERY_CAP_V2
-/* Sensor Driver cmd buffer meta type */
-#define CAM_SENSOR_PACKET_GENERIC_BLOB             1
-
-/* Sensor Res Blob Type */
-#define CAM_SENSOR_GENERIC_BLOB_RES_INFO           0
 
 enum camera_sensor_cmd_type {
 	CAMERA_SENSOR_CMD_TYPE_INVALID,
@@ -64,12 +57,6 @@ enum cam_ois_packet_opcodes {
 	CAM_OIS_PACKET_OPCODE_INIT,
 	CAM_OIS_PACKET_OPCODE_OIS_CONTROL,
 	CAM_OIS_PACKET_OPCODE_READ,
-#ifdef CONFIG_MOT_OIS_AF_DRIFT
-	CAM_OIS_PACKET_OPCODE_AF_DRIFT,
-#endif
-#ifdef CONFIG_MOT_OIS_AFTER_SALES_SERVICE
-	CAM_OIS_PACKET_OPCODE_OIS_GYRO_OFFSET,
-#endif
 	CAM_OIS_PACKET_OPCODE_WRITE_TIME
 };
 
@@ -111,7 +98,6 @@ enum cam_sensor_packet_opcodes {
 	CAM_SENSOR_PACKET_OPCODE_SENSOR_PROBE_V2,
 	CAM_SENSOR_PACKET_OPCODE_SENSOR_REG_BANK_UNLOCK,
 	CAM_SENSOR_PACKET_OPCODE_SENSOR_REG_BANK_LOCK,
-	CAM_SENSOR_PACKET_OPCODE_SENSOR_RESCONFIG = 126,
 	CAM_SENSOR_PACKET_OPCODE_SENSOR_NOP = 127,
 };
 
@@ -395,24 +381,6 @@ struct cam_cmd_probe_v2 {
 	__u32    logical_camera_id;
 	char     sensor_name[CAM_SENSOR_NAME_MAX_SIZE];
 	__u32    reserved[4];
-#ifdef CONFIG_CCI_ADDR_SWITCH
-	/* add i2c addr switch support*/
-	__u8     i2c_addr_switch;
-	__u32    second_i2c_address;
-	__u8     i2c_switch_reg_addr_Type;
-	__u8     i2c_switch_reg_data_Type;
-	__u32    i2c_switch_reg_addr;
-	__u32    i2c_switch_reg_data;
-	__u32    i2c_switch_reg_delayMs;
-#endif
-#ifdef CONFIG_MOT_PROBE_SUB_DEVICE
-	__u8     probe_sub_device;
-	__u32    sub_device_addr;
-	__u8     sub_device_data_type;
-	__u8     sub_device_addr_type;
-	__u32    sub_device_id_addr;
-	__u32    expected_sub_device_id;
-#endif
 } __attribute__((packed));
 
 /**
@@ -876,57 +844,5 @@ struct cam_flash_query_cap_info {
 	__u32    max_duration_flash[CAM_FLASH_MAX_LED_TRIGGERS];
 	__u32    max_current_torch[CAM_FLASH_MAX_LED_TRIGGERS];
 } __attribute__ ((packed));
-
-/**
- * struct cam_flash_query_cap_v2  :  capabilities info for flash
- *
- * @version             :  Version to indicate the change
- * @slot_info           :  Indicates about the slotId or cell Index
- * @max_current_flash   :  max supported current for flash
- * @max_duration_flash  :  max flash turn on duration
- * @max_current_torch   :  max supported current for torch
- * @flash_type          :  Flag to indicate flash type (i2c/pmic)
- * @num_valid_params    :  Number of valid params to pass
- * @param_mask          :  Param mask for the params passed
- * @params              :  Array to contain future parameters
- *
- */
-struct cam_flash_query_cap_info_v2 {
-	__u32    version;
-	__u32    slot_info;
-	__u32    max_current_flash[CAM_FLASH_MAX_LED_TRIGGERS];
-	__u32    max_duration_flash[CAM_FLASH_MAX_LED_TRIGGERS];
-	__u32    max_current_torch[CAM_FLASH_MAX_LED_TRIGGERS];
-	__u32    flash_type;
-	__u32    num_valid_params;
-	__u32    param_mask;
-	__u32    params[3];
-} __attribute__ ((packed));
-
-/**
- * struct cam_cmd_sensor_res_info - Contains sensor res info
- *
- * res_index is the key property, it specifies the
- * combinations of other properties enclosed in this
- * structure.
- *
- * @version           :Version to indicate the change
- * @res_index         : Sensor resolution index
- * @num_batched_frames: Number of batched frames
- * @num_valid_params  : Number of valid params
- * @valid_param_mask  : Valid param mask
- * @params            : params
- */
-struct cam_sensor_res_info {
-	__u32 version;
-	__u16 res_index;
-	__u16 num_batched_frames;
-	__u32 num_valid_params;
-	__u32 valid_param_mask;
-	__u16 params[4];
-} __attribute__((packed));
-
-#define VIDIOC_MSM_CCI_CFG \
-	_IOWR('V', BASE_VIDIOC_PRIVATE + 23, struct cam_cci_ctrl)
 
 #endif

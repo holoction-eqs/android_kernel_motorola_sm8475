@@ -247,13 +247,7 @@ int dw9781c_check_fw_download(struct camera_io_master * io_master_info, const ui
 			return needDownload;
 		}
 	} else {
-		fwchecksum = dw9781_fw_checksum_verify(io_master_info);
-		if(fwchecksum != g_dw9781FirmwareContext.checksum)
-		{
-			needDownload = 1;
-			CAM_DBG(CAM_OIS, "[dw9781c] firmware checksum error 0x%04X, 0x%04X",
-			                  g_dw9781FirmwareContext.checksum, fwchecksum);
-		}
+
 
 		dw9781_cci_read(io_master_info, FW_VER_CURR_ADDR, &fw_version_current);
 		fw_version_latest = g_dw9781FirmwareContext.version; /*Firmware version read from file content.*/
@@ -262,18 +256,32 @@ int dw9781c_check_fw_download(struct camera_io_master * io_master_info, const ui
 			              fw_version_current, fw_version_latest);
 
 		/* download firmware, check if need update, download firmware to flash */
-		if (needDownload || ((fw_version_current & 0xFF) != (fw_version_latest & 0xFF))) {
-			CAM_DBG(CAM_OIS, "[dw9781c] start flash download:: size:%d, version:0x%x needDownload %d",
-			                 g_dw9781FirmwareContext.size, g_dw9781FirmwareContext.version, needDownload);
+		if (((fw_version_current & 0xFF) != (fw_version_latest & 0xFF))) {
 
-			ret = dw9781_prepare_fw_download(io_master_info);
-			CAM_DBG(CAM_OIS, "[dw9781c] flash download::vendor_dw9781c");
-			if (ret != EOK) {
-				dw9781_erase_mtp_rewritefw(io_master_info);
-				dw9781_cci_write(io_master_info, 0xd000, 0x0000); /* Shut download mode */
-				CAM_ERR(CAM_OIS, "[dw9781c] firmware download error, ret = 0x%x", ret);
-				CAM_ERR(CAM_OIS, "[dw9781c] change dw9781c state to shutdown mode");
+			fwchecksum = dw9781_fw_checksum_verify(io_master_info);
+			if(fwchecksum != g_dw9781FirmwareContext.checksum)
+			{
 				needDownload = 1;
+				CAM_DBG(CAM_OIS, "[dw9781c] firmware checksum error 0x%04X, 0x%04X",
+						g_dw9781FirmwareContext.checksum, fwchecksum);
+			}
+
+			if (needDownload)
+			{
+				CAM_DBG(CAM_OIS, "[dw9781c] start flash download:: size:%d, version:0x%x needDownload %d",
+						g_dw9781FirmwareContext.size, g_dw9781FirmwareContext.version, needDownload);
+
+				ret = dw9781_prepare_fw_download(io_master_info);
+				CAM_DBG(CAM_OIS, "[dw9781c] flash download::vendor_dw9781c");
+				if (ret != EOK) {
+					dw9781_erase_mtp_rewritefw(io_master_info);
+					dw9781_cci_write(io_master_info, 0xd000, 0x0000); /* Shut download mode */
+					CAM_ERR(CAM_OIS, "[dw9781c] firmware download error, ret = 0x%x", ret);
+					CAM_ERR(CAM_OIS, "[dw9781c] change dw9781c state to shutdown mode");
+					needDownload = 1;
+				}
+			} else {
+				CAM_DBG(CAM_OIS, "[dw9781c] ois firmware version is updated, skip download");
 			}
 		} else {
 			CAM_DBG(CAM_OIS, "[dw9781c] ois firmware version is updated, skip download");
@@ -308,6 +316,7 @@ void dw9781_post_firmware_download(struct camera_io_master * io_master_info, con
 		CAM_ERR(CAM_OIS, "[dw9781c] change dw9781c state to shutdown mode");
 	} else {
 		CAM_DBG(CAM_OIS, "[dw9781c] Firmware download succes...");
+		dw9781_ois_reset(io_master_info);
 	}
 
 	return;
